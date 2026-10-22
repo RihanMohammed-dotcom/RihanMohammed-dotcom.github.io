@@ -1,0 +1,1035 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bulk Run</title>
+<style>
+:root{  /* Maroon (default) */
+  --bg:#16070B; --bg2:#1E0B11; --panel:#220D14; --panel2:#1C0A10; --line:#3A1621; --line2:#4E1E2C;
+  --text:#F6E9EC; --text2:#D1AEB7; --text3:#9A7480;
+  --brand:#9F1239; --brand2:#BE123C; --brandSoft:rgba(190,18,60,.20); --brandText:#FDA4AF; --onBrand:#FFFFFF;
+  --ok:#34D399; --okSoft:rgba(52,211,153,.12); --fail:#F87171; --failSoft:rgba(248,113,113,.13);
+  --warn:#FBBF24; --warnSoft:rgba(251,191,36,.12); --info:#60A5FA;
+  --side:#0F0407; --side2:#2A0E17; --sideText:#F6E9EC; --sideText2:#A67C88; --sideLine:rgba(255,255,255,.06);
+  --navText:#E3C7CE; --navHover:rgba(255,255,255,.06); --navHoverText:#FFFFFF;
+  --activeBg:linear-gradient(135deg,#BE123C,#800020); --activeText:#FFFFFF; --activeShadow:rgba(128,0,32,.5);
+  --tagBg:rgba(251,191,36,.16); --tagText:#FCD34D; --activeTagBg:rgba(255,255,255,.2); --activeTagText:#FFFFFF;
+  --sideBtnBg:rgba(255,255,255,.05); --sideBtnOn:rgba(255,255,255,.12); --sideBtnOnText:#FFFFFF; --avatarText:#FDA4AF;
+  --grad:linear-gradient(135deg,#FB7185 0%,#BE123C 50%,#800020 100%); --logoText:#FFFFFF;
+  --hero:linear-gradient(120deg,#2A0A12 0%,#5C0A1E 55%,#9F1239 100%); --heroText:#FFFFFF; --heroSub:#F1C9D2;
+  --console:#0C0305; --consoleText:#EBD3D9; --consoleLine:rgba(255,255,255,.06); --rowHl:rgba(190,18,60,.18); --consoleSys:#FDA4AF;
+  --loginBg:radial-gradient(1200px 600px at 15% 10%,rgba(190,18,60,.45),transparent 60%),radial-gradient(900px 600px at 90% 90%,rgba(251,113,133,.18),transparent 60%),#12050A;
+  --w1:#FB7185; --w2:#BE123C; --w3:#FDE68A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); --shadowLg:0 24px 70px rgba(0,0,0,.6);
+  --r:14px; --rs:10px;
+}
+:root[data-theme="yellow"]{
+  --bg:#FFFBEA; --bg2:#FEF3C7; --panel:#FFFFFF; --panel2:#FFFCF0; --line:#F3E3A6; --line2:#E6CF78;
+  --text:#2A2104; --text2:#5C4E1A; --text3:#8C7B3E;
+  --brand:#EAB308; --brand2:#FACC15; --brandSoft:rgba(234,179,8,.17); --brandText:#8A6100; --onBrand:#2A2104;
+  --ok:#047857; --okSoft:rgba(5,150,105,.12); --fail:#B91C1C; --failSoft:rgba(220,38,38,.10);
+  --warn:#B45309; --warnSoft:rgba(217,119,6,.14); --info:#1D4ED8;
+  --side:#F7C600; --side2:#E3B200; --sideText:#2A2104; --sideText2:#6B5410; --sideLine:rgba(42,33,4,.12);
+  --navText:#3A2E05; --navHover:rgba(42,33,4,.08); --navHoverText:#1A1400;
+  --activeBg:#2A2104; --activeText:#FDE047; --activeShadow:rgba(42,33,4,.3);
+  --tagBg:rgba(42,33,4,.12); --tagText:#5A3E00; --activeTagBg:rgba(253,224,71,.2); --activeTagText:#FDE047;
+  --sideBtnBg:rgba(42,33,4,.08); --sideBtnOn:#FFFFFF; --sideBtnOnText:#2A2104; --avatarText:#FDE047;
+  --grad:linear-gradient(135deg,#FEF08A 0%,#FACC15 50%,#EAB308 100%); --logoText:#2A2104;
+  --hero:linear-gradient(120deg,#2A2104 0%,#6B4E00 55%,#EAB308 100%); --heroText:#FFFFFF; --heroSub:#FDECB0;
+  --console:#1C1705; --consoleText:#F3E8C0; --consoleLine:rgba(255,255,255,.07); --rowHl:rgba(250,204,21,.14); --consoleSys:#FDE047;
+  --loginBg:radial-gradient(1200px 600px at 15% 10%,rgba(250,204,21,.40),transparent 60%),radial-gradient(900px 600px at 90% 90%,rgba(234,179,8,.22),transparent 60%),#1A1404;
+  --w1:#FEF08A; --w2:#FACC15; --w3:#FFFFFF;
+  --shadow:0 1px 2px rgba(60,45,0,.06),0 4px 16px rgba(60,45,0,.07); --shadowLg:0 20px 60px rgba(60,45,0,.25);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font:14px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+input{font:inherit;color:inherit}
+.hidden{display:none!important}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.mono{font-family:"SF Mono",Menlo,Consolas,monospace}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--line2);border-radius:10px;border:2px solid transparent;background-clip:padding-box}
+
+/* ---------- login ---------- */
+#login{position:fixed;inset:0;display:grid;place-items:center;overflow:hidden;
+  background:var(--loginBg)}
+#login .waves{position:absolute;inset:0;opacity:.35}
+.lcard{position:relative;width:400px;padding:36px 34px 28px;border-radius:22px;background:rgba(17,26,48,.72);
+  border:1px solid rgba(255,255,255,.09);backdrop-filter:blur(18px);box-shadow:0 30px 80px rgba(0,0,0,.5);color:#E8ECF6;
+  animation:rise .5s cubic-bezier(.2,.8,.2,1)}
+.logo{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-weight:800;font-size:22px;color:var(--logoText);
+  background:var(--grad);box-shadow:0 6px 18px var(--activeShadow)}
+.lcard h1{margin:18px 0 4px;font-size:22px;letter-spacing:-.01em}
+.lcard p.sub{margin:0 0 24px;color:#8E9BBA}
+.lfield{display:block;margin-bottom:14px}
+.lfield span{display:block;font-size:12px;color:#AAB4CC;margin-bottom:6px;font-weight:600}
+.lfield input{width:100%;padding:12px 14px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);
+  color:#fff;outline:none;transition:.15s}
+.lfield input:focus{border-color:var(--brand2);box-shadow:0 0 0 4px var(--brandSoft)}
+.lerr{min-height:20px;color:#F87171;font-size:13px;margin:2px 0 8px}
+.lbtn{width:100%;padding:12px;border-radius:11px;color:var(--onBrand);font-weight:650;
+  background:linear-gradient(135deg,var(--brand2),var(--brand));box-shadow:0 8px 22px var(--activeShadow);transition:.15s}
+.lbtn:hover{filter:brightness(1.08)} .lbtn:disabled{opacity:.6}
+.lfoot{margin-top:18px;text-align:center;color:#6B7794;font-size:12px}
+.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ---------- shell ---------- */
+#app{display:grid;grid-template-columns:252px 1fr;height:100vh}
+aside{background:var(--side);color:var(--sideText);display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--sideLine)}
+.brand{display:flex;align-items:center;gap:12px;padding:20px 18px 16px}
+.brand .logo{width:36px;height:36px;border-radius:10px;font-size:17px}
+.brand b{display:block;font-size:15px;letter-spacing:.02em} .brand small{color:var(--sideText2);font-size:11.5px}
+nav{flex:1;overflow:auto;padding:6px 10px 10px}
+.ngroup{margin:12px 10px 5px;font-size:10.5px;letter-spacing:.09em;color:var(--sideText2);font-weight:700;text-transform:uppercase}
+.nitem{width:100%;display:flex;align-items:center;gap:11px;padding:8px 11px;border-radius:10px;color:var(--navText);text-align:left;
+  transition:background .12s,color .12s;position:relative;font-weight:520}
+.nitem:hover{background:var(--navHover);color:var(--navHoverText)}
+.nitem.active{background:var(--activeBg);color:var(--activeText);box-shadow:0 6px 16px var(--activeShadow)}
+.nitem .tag{margin-left:auto;font-size:10px;padding:2px 6px;border-radius:6px;background:var(--tagBg);color:var(--tagText);font-weight:700;letter-spacing:.03em}
+.nitem.active .tag{background:var(--activeTagBg);color:var(--activeTagText)}
+.nitem .spin{margin-left:auto}
+.sfoot{padding:12px;border-top:1px solid var(--sideLine)}
+.theme{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;background:var(--sideBtnBg);padding:4px;border-radius:10px;margin-bottom:10px}
+.theme button{padding:6px 0;border-radius:7px;color:var(--sideText2);font-size:12px;display:flex;align-items:center;justify-content:center;gap:5px}
+.theme button.on{background:var(--sideBtnOn);color:var(--sideBtnOnText);font-weight:650}
+.sw{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 0 1.5px rgba(255,255,255,.5)}
+.sw.yellow{background:#FACC15}.sw.maroon{background:#800020}
+.theme svg.i{width:14px;height:14px}
+.me{display:flex;align-items:center;gap:10px;padding:6px 4px}
+.avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--side2);color:var(--avatarText);text-transform:uppercase}
+.me .who{flex:1;min-width:0} .me .who b{display:block;font-size:13px} .me .who small{color:var(--sideText2);font-size:11.5px}
+.iconbtn{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;color:var(--sideText2)}
+.iconbtn:hover{background:var(--navHover);color:var(--navHoverText)}
+
+main{min-width:0;min-height:0;overflow:auto;display:flex;flex-direction:column}
+.page{padding:26px 30px 30px;max-width:1500px;width:100%;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.phead{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px}
+.phead .pic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:var(--brandSoft);color:var(--brandText)}
+.phead .pic svg.i{width:22px;height:22px}
+.phead h2{margin:0;font-size:22px;letter-spacing:-.015em}
+.phead p{margin:3px 0 0;color:var(--text2)}
+.phead .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:650}
+.pill.sens{background:var(--warnSoft);color:var(--warn)}
+.pill.ok{background:var(--okSoft);color:var(--ok)} .pill.fail{background:var(--failSoft);color:var(--fail)}
+.pill.run{background:var(--brandSoft);color:var(--brandText)} .pill.mute{background:var(--bg2);color:var(--text2)}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.card .ch{display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line)}
+.card .ch h3{margin:0;font-size:14px;font-weight:680}
+.card .ch .step{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:750;background:var(--brandSoft);color:var(--brandText)}
+.card .ch .step.done{background:var(--ok);color:#fff}
+.card .ch .aside{margin-left:auto;color:var(--text3);font-size:12.5px}
+.card .cb{padding:16px 18px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 14px;border-radius:10px;font-weight:620;
+  border:1px solid var(--line2);background:var(--panel);transition:.12s;white-space:nowrap}
+.btn:hover{border-color:var(--brand2);color:var(--brandText)}
+.btn.primary{background:linear-gradient(135deg,var(--brand2),var(--brand));color:var(--onBrand);border-color:transparent;box-shadow:0 6px 16px var(--activeShadow)}
+.btn.primary:hover{filter:brightness(1.07);color:var(--onBrand)}
+.btn.go{background:linear-gradient(135deg,#10B981,#059669);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(5,150,105,.28);padding:12px 22px;font-size:15px}
+.btn.go:hover{filter:brightness(1.06);color:#fff}
+.btn.danger{background:var(--failSoft);color:var(--fail);border-color:transparent}
+.btn.danger:hover{background:var(--fail);color:#fff}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--text2)} .btn.ghost:hover{background:var(--bg2);color:var(--text)}
+.btn.sm{padding:6px 10px;font-size:12.5px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
+.btn svg.i{width:16px;height:16px}
+
+/* script page */
+.grid2{display:grid;grid-template-columns:minmax(380px,440px) 1fr;gap:18px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:16px}
+.field{margin-bottom:12px} .field:last-child{margin-bottom:0}
+.field label{display:block;font-size:12px;font-weight:650;color:var(--text2);margin-bottom:6px}
+.inp{display:flex;align-items:center;border:1px solid var(--line2);border-radius:10px;background:var(--panel2);transition:.15s}
+.inp:focus-within{border-color:var(--brand2);box-shadow:0 0 0 4px var(--brandSoft)}
+.inp input{flex:1;min-width:0;border:0;background:transparent;padding:10px 12px;outline:none}
+.inp button{padding:0 10px;color:var(--text3)} .inp button:hover{color:var(--text)}
+.saverow{display:flex;align-items:center;gap:10px;margin-top:12px}
+.saverow small{color:var(--text3)}
+.drop{border:1.5px dashed var(--line2);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:.15s;background:var(--panel2)}
+.drop:hover{border-color:var(--brand2);background:var(--brandSoft)}
+.drop .big{width:42px;height:42px;border-radius:12px;margin:0 auto 8px;display:grid;place-items:center;background:var(--brandSoft);color:var(--brandText)}
+.drop b{display:block} .drop small{color:var(--text3)}
+.file{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}
+.file .ficon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--okSoft);color:var(--ok)}
+.file .fname{flex:1;min-width:0} .file .fname b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file .fname small{color:var(--text3)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:8px;font-size:12px;font-weight:600;background:var(--bg2);color:var(--text2)}
+.chip.ok{background:var(--okSoft);color:var(--ok)} .chip.fail{background:var(--failSoft);color:var(--fail)} .chip.warn{background:var(--warnSoft);color:var(--warn)}
+.chip svg.i{width:13px;height:13px}
+.notice{display:flex;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;margin-top:10px}
+.notice.warn{background:var(--warnSoft);color:var(--warn)} .notice.fail{background:var(--failSoft);color:var(--fail)} .notice.info{background:var(--brandSoft);color:var(--brandText)}
+.notice svg.i{margin-top:1px}
+.hint{color:var(--text3);font-size:12.5px;margin-top:10px}
+.tablewrap{margin-top:12px;border:1px solid var(--line);border-radius:10px;overflow:auto;max-height:240px}
+table.t{border-collapse:collapse;width:100%;font-size:12px}
+table.t th,table.t td{padding:7px 10px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line)}
+table.t th{position:sticky;top:0;background:var(--panel2);color:var(--text2);font-weight:650}
+table.t th.miss{color:var(--fail)}
+table.t tr:last-child td{border-bottom:0}
+.runrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.runmeta{color:var(--text3);font-size:12.5px;margin-top:10px}
+
+/* run panel */
+.runpanel{display:flex;flex-direction:column;min-height:560px;height:calc(100vh - 150px);overflow:hidden}
+.rtop{padding:16px 18px;border-bottom:1px solid var(--line)}
+.rtop .row{display:flex;align-items:center;gap:10px}
+.rtop h3{margin:0;font-size:14px}
+.rtop .elapsed{margin-left:auto;color:var(--text3);font-size:12.5px}
+.bar{height:8px;border-radius:99px;background:var(--bg2);overflow:hidden;margin-top:14px;position:relative}
+.bar i{display:block;height:100%;width:0;border-radius:99px;background:var(--grad);transition:width .3s}
+.bar.indet i{width:30%!important;animation:indet 1.2s ease-in-out infinite}
+@keyframes indet{0%{transform:translateX(-100%)}100%{transform:translateX(340%)}}
+.barlbl{display:flex;justify-content:space-between;color:var(--text3);font-size:12px;margin-top:6px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.stat{padding:10px 12px;border-radius:11px;background:var(--panel2);border:1px solid var(--line)}
+.stat b{display:block;font-size:22px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat small{color:var(--text3);font-size:11.5px;font-weight:650;text-transform:uppercase;letter-spacing:.05em}
+.stat.ok b{color:var(--ok)} .stat.fail b{color:var(--fail)} .stat.skip b{color:var(--warn)}
+.result{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line)}
+.result.ok{background:var(--okSoft)} .result.error{background:var(--failSoft)} .result.stopped{background:var(--warnSoft)}
+.result .rt{flex:1;min-width:0} .result .rt b{display:block} .result .rt small{color:var(--text2)}
+.ctool{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--console);border-bottom:1px solid var(--consoleLine)}
+.ctool .seg{display:flex;gap:2px;background:rgba(255,255,255,.05);border-radius:8px;padding:2px}
+.ctool .seg button{padding:4px 10px;border-radius:6px;color:#8E9BBA;font-size:12px}
+.ctool .seg button.on{background:rgba(255,255,255,.1);color:#fff}
+.ctool .sp{flex:1}
+.ctool .cbtn{color:#8E9BBA;font-size:12px;padding:4px 8px;border-radius:6px;display:flex;gap:5px;align-items:center}
+.ctool .cbtn:hover{background:rgba(255,255,255,.08);color:#fff}
+.ctool .cbtn svg.i{width:14px;height:14px}
+.console{flex:1;overflow:auto;background:var(--console);color:var(--consoleText);padding:12px 0;font:12.5px/1.6 "SF Mono",Menlo,Consolas,monospace}
+.console .l{padding:0 16px;white-space:pre-wrap;word-break:break-word}
+.console .l.ok{color:#4ADE80} .console .l.fail{color:#F87171} .console .l.warn{color:#FBBF24} .console .l.info{color:#7DD3FC}
+.console .l.row{color:#fff;font-weight:700;margin-top:6px;background:var(--rowHl)}
+.console .l.sep{color:#3A4566}
+.console .l.done{color:#fff;font-weight:700}
+.console .l.sys{color:var(--consoleSys)}
+.console .empty{height:100%;display:grid;place-items:center;color:#56617E;text-align:center;padding:30px}
+.console .empty svg.i{width:34px;height:34px;margin-bottom:8px;opacity:.6}
+.console.errs .l:not(.fail):not(.row):not(.done){display:none}
+
+/* home */
+.hero{padding:22px 24px;border-radius:18px;color:var(--heroText);margin-bottom:18px;position:relative;overflow:hidden;
+  background:var(--hero)}
+.hero h2{margin:0;font-size:24px;letter-spacing:-.02em} .hero p{margin:6px 0 0;color:var(--heroSub)}
+.hero svg.w{position:absolute;right:-40px;top:-20px;opacity:.35}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.tile{padding:16px 18px}
+.tile small{color:var(--text3);font-weight:650;font-size:12px}
+.tile b{display:block;font-size:26px;letter-spacing:-.02em;margin-top:4px}
+.tile span{color:var(--text3);font-size:12.5px}
+.quick{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.qbtn{display:flex;align-items:center;gap:12px;padding:14px;border-radius:13px;border:1px solid var(--line);background:var(--panel);text-align:left;transition:.15s;box-shadow:var(--shadow)}
+.qbtn:hover{border-color:var(--brand2);transform:translateY(-1px)}
+.qbtn .qi{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--brandSoft);color:var(--brandText)}
+.qbtn b{display:block;font-size:13.5px} .qbtn small{color:var(--text3);font-size:12px}
+.sec{display:flex;align-items:center;margin:24px 0 12px} .sec h3{margin:0;font-size:15px} .sec .sp{flex:1}
+table.list{width:100%;border-collapse:collapse}
+table.list th,table.list td{padding:11px 16px;text-align:left;border-bottom:1px solid var(--line);font-size:13px}
+table.list th{color:var(--text3);font-weight:650;font-size:12px;background:var(--panel2)}
+table.list tr:last-child td{border-bottom:0}
+table.list td .acts{display:flex;gap:4px;justify-content:flex-end}
+.emptybox{padding:34px;text-align:center;color:var(--text3)}
+
+/* settings */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.kv{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);gap:10px}
+.kv:last-child{border-bottom:0} .kv .k{flex:1;color:var(--text2)} .kv .v{font-weight:600}
+.seg2{display:inline-flex;background:var(--bg2);padding:3px;border-radius:10px;gap:2px}
+.seg2 button{padding:6px 14px;border-radius:8px;color:var(--text2);font-weight:600;font-size:13px}
+.seg2 button.on{background:var(--panel);color:var(--text);box-shadow:var(--shadow)}
+
+/* modal + toast */
+.scrim{position:fixed;inset:0;background:rgba(5,8,18,.55);backdrop-filter:blur(4px);display:grid;place-items:center;z-index:50;animation:fade .15s}
+.modal{width:min(520px,92vw);background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadowLg);overflow:hidden;animation:rise .2s}
+.modal .mh{display:flex;gap:14px;padding:22px 22px 6px}
+.modal .mh .mi{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none}
+.modal .mh .mi.warn{background:var(--warnSoft);color:var(--warn)} .modal .mh .mi.info{background:var(--brandSoft);color:var(--brandText)}
+.modal h3{margin:2px 0 4px;font-size:17px} .modal p{margin:0;color:var(--text2)}
+.modal .mb{padding:12px 22px}
+.modal .mf{display:flex;justify-content:flex-end;gap:8px;padding:14px 22px 20px}
+.summary{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:6px}
+.summary div{display:flex;justify-content:space-between;gap:12px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:13px}
+.summary div:last-child{border-bottom:0} .summary span{color:var(--text3)} .summary b{text-align:right}
+.check{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px;border-radius:10px;background:var(--warnSoft);color:var(--text);cursor:pointer;font-size:13px}
+.check input{margin-top:2px;accent-color:var(--brand)}
+.modal.wide{width:min(640px,94vw)}
+.modal .mb.scroll{max-height:min(52vh,520px);overflow:auto}
+.modal .mb.pinned{padding-top:0;padding-bottom:0;border-top:1px solid var(--line)} .modal .mb.pinned .check{margin-top:10px}
+.modal .mh .mi.ok{background:var(--okSoft);color:var(--ok)} .modal .mh .mi.fail{background:var(--failSoft);color:var(--fail)}
+.checks{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:10px}
+.ck{display:flex;gap:11px;padding:10px 12px;border-bottom:1px solid var(--line)} .ck:last-child{border-bottom:0}
+.ck .cki{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--bg2);color:var(--text3)}
+.ck .cki svg.i{width:14px;height:14px;stroke-width:2.4}
+.ck.pass .cki{background:var(--okSoft);color:var(--ok)} .ck.fail .cki{background:var(--failSoft);color:var(--fail)}
+.ck.warn .cki{background:var(--warnSoft);color:var(--warn)}
+.ck.fail{background:var(--failSoft)} .ck.warn{background:var(--warnSoft)}
+.ck .ckb{min-width:0;flex:1} .ck .ckb b{display:block;font-size:13px} .ck .ckb span{color:var(--text2);font-size:12.5px}
+.ck ul{margin:6px 0 0;padding-left:18px;font-size:12.5px;color:var(--text)} .ck li{margin:2px 0;word-break:break-word}
+.ck.pending .ckb b{color:var(--text3);font-weight:550}
+svg.i.sm{width:13px;height:13px;vertical-align:-2px}
+#runmeta a{color:var(--brandText);font-weight:600}
+#toasts{position:fixed;right:20px;bottom:20px;display:flex;flex-direction:column;gap:8px;z-index:60}
+.toast{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadowLg);min-width:260px;animation:rise .2s}
+.toast.ok svg.i{color:var(--ok)} .toast.fail svg.i{color:var(--fail)} .toast.info svg.i{color:var(--brandText)}
+.spinner{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin .8s linear infinite}
+.spinner.dark{border-color:var(--line2);border-top-color:var(--brand)}
+@keyframes spin{to{transform:rotate(360deg)}}
+kbd{font:11px "SF Mono",Menlo,monospace;padding:1px 5px;border-radius:5px;border:1px solid var(--line2);background:var(--panel2);color:var(--text3)}
+@media (max-width:1180px){.grid2{grid-template-columns:1fr}.runpanel{height:620px}.tiles{grid-template-columns:repeat(2,1fr)}.sgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <svg class="waves" viewBox="0 0 1200 800" preserveAspectRatio="none" width="100%" height="100%">
+    <defs><linearGradient id="wg" x1="0" x2="1"><stop offset="0" style="stop-color:var(--w1)"/><stop offset=".5" style="stop-color:var(--w2)"/><stop offset="1" style="stop-color:var(--w3)"/></linearGradient></defs>
+    <g fill="none" stroke="url(#wg)" stroke-width="1.2" opacity=".7">
+      <path d="M0 560 C 200 480, 400 640, 600 560 S 1000 480, 1200 560"/><path d="M0 590 C 200 510, 400 670, 600 590 S 1000 510, 1200 590"/>
+      <path d="M0 620 C 200 540, 400 700, 600 620 S 1000 540, 1200 620"/><path d="M0 650 C 200 570, 400 730, 600 650 S 1000 570, 1200 650"/>
+      <path d="M0 200 C 250 120, 450 280, 700 200 S 1050 120, 1200 180" opacity=".5"/><path d="M0 230 C 250 150, 450 310, 700 230 S 1050 150, 1200 210" opacity=".5"/>
+    </g>
+  </svg>
+  <form class="lcard" id="lform" autocomplete="off">
+    <div class="logo">B</div>
+    <h1>Welcome back</h1>
+    <p class="sub">Sign in to Bulk Run</p>
+    <label class="lfield"><span>Username</span><input id="lu" spellcheck="false" autofocus></label>
+    <label class="lfield"><span>Password</span><input id="lp" type="password"></label>
+    <div class="lerr" id="lerr"></div>
+    <button class="lbtn" id="lbtn" type="submit">Sign in</button>
+    <div class="lfoot" id="lver">Internal operations tool</div>
+  </form>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <aside>
+    <div class="brand"><div class="logo">B</div><div><b>BULK RUN</b><small>Operations console</small></div></div>
+    <nav id="nav"></nav>
+    <div class="sfoot">
+      <div class="theme" id="themeSw">
+        <button data-t="yellow" title="Yellow mode"><span class="sw yellow"></span>Yellow</button>
+        <button data-t="maroon" title="Maroon mode"><span class="sw maroon"></span>Maroon</button>
+      </div>
+      <div class="me"><div class="avatar" id="av">r</div><div class="who"><b id="who">rihan</b><small>Signed in</small></div>
+        <button class="iconbtn" id="signout" title="Sign out"><svg class="i"><use href="#i-logout"/></svg></button></div>
+    </div>
+  </aside>
+  <main id="main"></main>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toasts"></div>
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6 15h4"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/><path d="M5 21h14"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 3v14M6 11l6 6 6-6"/><path d="M5 21h14"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8h14l-4-4M20 16H6l4 4"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="5" rx="1"/><path d="M5 13v8h14v-8M12 8v13M12 8c-2-4-6-4-6-1.5S9.5 8 12 8c2.5 0 6 1 6-1.5S14 4 12 8"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9M3 9h18M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 12v9h14v-9M10 21v-5h4v5"/></symbol>
+  <symbol id="i-coins" viewBox="0 0 24 24"><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M9 15v2c0 1.7 2.7 3 6 3s6-1.3 6-3v-5c0-1.6-2.4-2.9-5.5-3"/></symbol>
+  <symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></symbol>
+  <symbol id="i-report" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13l3 3 5-6"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z" fill="currentColor"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M17.9 17.9A10.5 10.5 0 0 1 12 19c-6.5 0-10-7-10-7a18 18 0 0 1 4.1-5M9.9 5.2A9.7 9.7 0 0 1 12 5c6.5 0 10 7 10 7a18 18 0 0 1-2.2 3.2M3 3l18 18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4M12 16h.01"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-open" viewBox="0 0 24 24"><path d="M14 3h7v7M10 14 21 3M18 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24"><path d="M4 17l6-5-6-5M12 19h8"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/></symbol>
+  <symbol id="i-team" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5.5 6.5-5.5s5.5 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c2 .7 3 2.5 3.5 5.2"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+</svg>
+
+<script>
+/* ===== portfolio demo: fake backend + autoplay, sample data only ===== */
+(() => {
+const SCRIPTS = [{"id": "create_user", "name": "Create Users", "icon": "user", "group": "Onboarding", "sensitive": false, "excel": false, "desc": "Create users with ID, passport & KYC", "fields": [{"label": "API Key", "key": "API_KEY", "pw": true}], "columns": ["ID", "Firstname", "Lastname"], "hint": "Columns: ID, Firstname, Lastname, MobileNumber\u2026", "has_template": false, "script_found": true, "script": "create_user.py", "saved": {"API_KEY": "sk_test_sample_0000"}}, {"id": "create_card", "name": "Accounts & Cards", "icon": "card", "group": "Onboarding", "sensitive": false, "excel": false, "desc": "Create accounts and cards, then link them", "fields": [{"label": "API Key", "key": "API_KEY", "pw": true}], "columns": ["ResidenceCountry"], "hint": "Same file as Create Users", "has_template": false, "script_found": true, "script": "create_card.py", "saved": {"API_KEY": "sk_test_sample_0000"}}, {"id": "load", "name": "Load Funds", "icon": "up", "group": "Funds", "sensitive": true, "excel": true, "desc": "Load funds into accounts \u2014 handles account status & limits", "fields": [], "columns": ["tenant_id", "account_id", "amount", "currency"], "hint": "API key picked automatically by tenant", "has_template": true, "script_found": true, "script": "load.py", "saved": {}}, {"id": "unload", "name": "Unload Funds", "icon": "down", "group": "Funds", "sensitive": true, "excel": true, "desc": "Unload funds from an account back to source", "fields": [], "columns": ["tenant_id", "account_id", "amount"], "hint": "API key picked automatically by tenant", "has_template": false, "script_found": true, "script": "unload.py", "saved": {}}, {"id": "wallet", "name": "Wallet Transfer", "icon": "swap", "group": "Funds", "sensitive": true, "excel": true, "desc": "Internal wallet transfer between two accounts", "fields": [], "columns": ["tenant_id", "sender_account_id", "recipient_account_id", "amount", "currency", "notes", "dry_run", "idempotency_key"], "hint": "API key picked automatically by tenant", "has_template": true, "script_found": true, "script": "wallet.py", "saved": {}}, {"id": "incentive", "name": "Incentive Load", "icon": "gift", "group": "Funds", "sensitive": false, "excel": false, "desc": "Send incentive loads from business accounts to users", "fields": [{"label": "API Key", "key": "API_KEY", "pw": true}], "columns": ["ID", "Amount"], "hint": "Columns: ID, Amount, Currency, notes", "has_template": false, "script_found": true, "script": "incentive.py", "saved": {"API_KEY": "sk_test_sample_0000"}}, {"id": "breakage", "name": "Partner Breakage", "icon": "store", "group": "Monthly", "sensitive": false, "excel": false, "desc": "Move monthly breakage back to the partner account", "fields": [{"label": "API Key", "key": "API_KEY", "pw": true}], "columns": [], "hint": "Monthly breakage report", "has_template": false, "script_found": true, "script": "breakage.py", "saved": {"API_KEY": "sk_test_sample_0000"}}, {"id": "unclaimed", "name": "Unclaimed Funds", "icon": "coins", "group": "Monthly", "sensitive": false, "excel": false, "desc": "Transfer unclaimed funds \u2014 suspended + closed users", "fields": [], "columns": [], "hint": "Monthly unclaimed funds report", "has_template": false, "script_found": true, "script": "unclaimed.py", "saved": {}}, {"id": "terminate_cards", "name": "Terminate Cards", "icon": "ban", "group": "Cards", "sensitive": false, "excel": false, "desc": "Terminate cards in bulk by card token", "fields": [], "columns": ["token", "tenant_id"], "hint": "API key picked automatically by tenant", "has_template": false, "script_found": true, "script": "terminate_cards.py", "saved": {}}];
+const ago = m => new Date(Date.now() - m * 60000).toISOString().slice(0, 19);
+const HIST = [
+  {when: ago(42), user:"alex", script:"Wallet Transfer", sid:"wallet", file:"northwind-oct.xlsx", status:"ok", summary:{ok:24,fail:0,skip:0}, report:"r1", seconds:71},
+  {when: ago(130), user:"alex", script:"Load Funds", sid:"load", file:"bluefin-topups.xlsx", status:"ok", summary:{ok:118,fail:0,skip:2}, report:"r2", seconds:204},
+  {when: ago(260), user:"sara", script:"Create Users", sid:"create_user", file:"cedar-batch-7.csv", status:"error", summary:{ok:46,fail:3,skip:0}, report:"r3", seconds:96},
+  {when: ago(1500), user:"omar", script:"Terminate Cards", sid:"terminate_cards", file:"orbit-expired.csv", status:"ok", summary:{ok:310,fail:0,skip:6}, report:"r4", seconds:388},
+  {when: ago(2900), user:"alex", script:"Partner Breakage", sid:"breakage", file:"breakage-sep.csv", status:"ok", summary:{ok:57,fail:0,skip:0}, report:"r5", seconds:120},
+  {when: ago(4400), user:"lina", script:"Unload Funds", sid:"unload", file:"kite-refunds.xlsx", status:"stopped", summary:{ok:12,fail:0,skip:1}, report:"", seconds:40},
+];
+const N = 24, TEN = ["northwind","bluefin","cedar","orbit"];
+const acc = i => "acc_" + ((i * 2654435761) >>> 0).toString(16).slice(0, 8);
+const FILE = {path:"/demo/northwind-oct.xlsx", name:"northwind-oct.xlsx", rows:N,
+  columns:["tenant_id","sender_account_id","recipient_account_id","amount","currency","notes","dry_run","idempotency_key"], missing:[], warnings:[],
+  dry_run:{dry:0, live:N}, totals:[{currency:"AED", amount:48250}],
+  preview:[0,1,2,3,4].map(i => [TEN[i%4], acc(i+1), acc(i+90), (1000+i*250).toFixed(2), "AED", "Monthly allowance", "FALSE", "key-" + (1000+i)])};
+const wait = ms => new Promise(r => setTimeout(r, ms));
+let running = false;
+window.pywebview = { api: {
+  bootstrap: async () => ({version:"2.4", users:["alex"], scripts:SCRIPTS, prefs:{theme:"yellow"}, platform:"mac"}),
+  login: async () => ({ok:true, user:"Alex"}), logout: async () => ({ok:true}),
+  history: async () => HIST, list_reports: async () => new Array(37).fill(0),
+  pick_file: async () => JSON.parse(JSON.stringify(FILE)),
+  preflight: async () => { await wait(1700); return {ok:true, fail:0, warn:0, when:new Date().toISOString(), checks:[
+    {label:"Libraries and script", status:"pass", detail:"Python 3.12 · all libraries load", items:[], more:0},
+    {label:"Credentials", status:"pass", detail:"API keys found for 4 tenants", items:[], more:0},
+    {label:"File format, columns and values", status:"pass", detail:"24 rows · all 8 columns · amounts valid", items:[], more:0},
+    {label:"Connection to the platform (VPN)", status:"pass", detail:"Reachable in 84 ms", items:[], more:0},
+    {label:"API keys and accounts", status:"pass", detail:"48 accounts found and active", items:[], more:0}]}; },
+  run_script: async (sid) => { stream(sid); return {ok:true}; },
+  stop_script: async () => true, save_prefs: async () => true, save_config: async () => true, env_check: async () => ({python:"3.12", libs:{}, keys_file:true}),
+  open_file: async () => true, open_folder: async () => true, reveal: async () => true, save_report_as: async () => ({ok:true}), save_template: async () => ({ok:true}), force_quit: async () => true,
+}};
+async function stream(sid){
+  running = true; const t0 = Date.now();
+  const say = (...lines) => window.ops.onLines({sid, lines});
+  say("Loading northwind-oct.xlsx …", "Total rows: 24", "Auto-selected API keys for 4 tenants");
+  for (let i = 1; i <= N; i++) {
+    await wait(i === 1 ? 600 : 260 + Math.random() * 220);
+    const amt = (1000 + (i - 1) * 250).toFixed(2);
+    say(`[${i}/${N}] ${TEN[(i-1)%4]} · ${acc(i)} → ${acc(i+89)} · AED ${amt}`);
+    if (i === 15) { await wait(250); say("[PAUSED] No internet — waiting to reconnect…"); await wait(2600); say("[RESUMED] Connection is back — continuing from row 15"); }
+    await wait(140);
+    if (i === 9) say("  ⊘ [SKIP] Recipient account is suspended — row left for review");
+    else say(`  ✓ Transfer successful · ref TX-${(48210 + i * 7)}`);
+  }
+  await wait(500); say("Done. 23 successful · 0 failed · 1 skipped", "[REPORT] Report-northwind-oct.xlsx");
+  await wait(300);
+  window.ops.onDone({sid, status:"ok", code:0, summary:{ok:23, fail:0, skip:1}, report:"r", report_name:"Report-northwind-oct.xlsx", seconds:(Date.now()-t0)/1000});
+  running = false;
+}
+/* ---- autoplay: drives the real interface like a person would ---- */
+const $ = s => document.querySelector(s);
+const click = s => { const el = typeof s === "string" ? $(s) : s; if (el) el.click(); return !!el; };
+const until = async (fn, ms = 15000) => { const t = Date.now(); while (!fn()) { if (Date.now() - t > ms) return false; await wait(120); } return true; };
+async function loop(){
+  await until(() => $("#lform") && $("#lver").textContent);
+  $("#lu").value = "alex"; $("#lp").value = "••••••••";
+  await wait(500); $("#lform").requestSubmit();
+  while (true) {
+    await until(() => $("#recent table, #recent .emptybox:not(:has(.spinner))")); await wait(2600);
+    click('.nitem[data-id="wallet"]'); await wait(1300);
+    click("#pick"); await until(() => $("#pv")); await wait(1100);
+    click("#pv"); await wait(2200);
+    click("#run"); await until(() => $('[data-a="run"]'), 8000); await wait(1100);
+    document.querySelectorAll(".tick").forEach(t => { t.checked = true; t.dispatchEvent(new Event("change")); }); await wait(900);
+    click('[data-a="run"]');
+    await until(() => !running && $(".result"), 60000); await wait(4800);
+    click("#clear"); click("#clr"); await wait(300);
+    click('.nitem[data-id="home"]');
+  }
+}
+loop();
+})();
+</script>
+<script>
+(() => {
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ic = (n, cls = "") => `<svg class="i ${cls}"><use href="#i-${n}"/></svg>`;
+const api = () => window.pywebview.api;
+
+const S = { boot:null, user:null, page:"home", prefs:{}, per:{}, theme:"maroon" };
+const GROUPS = ["Onboarding","Funds","Monthly","Cards"];
+const MAX_LINES = 20000;
+
+function per(sid){
+  return S.per[sid] ||= { file:null, values:null, lines:[], running:false, started:0, prog:null,
+    live:{ok:0,fail:0,skip:0}, row:null, result:null, filter:"all", showPreview:false };
+}
+
+/* ---------- theme ---------- */
+function applyTheme(t){
+  if (t !== "yellow" && t !== "maroon") t = t === "light" ? "yellow" : "maroon";   // older saved values
+  S.theme = t;
+  document.documentElement.dataset.theme = t;
+  document.querySelectorAll("#themeSw button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  document.querySelectorAll("[data-theme-set]").forEach(b => b.classList.toggle("on", b.dataset.themeSet === t));
+}
+function setTheme(t){ applyTheme(t); api().save_prefs({theme:t}); }
+$("#themeSw").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setTheme(b.dataset.t); });
+
+/* ---------- toasts + modals ---------- */
+function toast(msg, kind = "info"){
+  const el = document.createElement("div");
+  el.className = `toast ${kind}`;
+  el.innerHTML = `${ic(kind === "ok" ? "check" : kind === "fail" ? "alert" : "info")}<span>${esc(msg)}</span>`;
+  $("#toasts").appendChild(el);
+  setTimeout(() => { el.style.transition = ".3s"; el.style.opacity = 0; setTimeout(() => el.remove(), 300); }, 3200);
+}
+function modal({icon="info", kind="info", title, text="", body="", buttons}){
+  return new Promise(resolve => {
+    const root = $("#modalRoot");
+    root.innerHTML = `<div class="scrim"><div class="modal" role="dialog">
+      <div class="mh"><div class="mi ${kind}">${ic(icon)}</div><div><h3>${esc(title)}</h3>${text ? `<p>${esc(text)}</p>` : ""}</div></div>
+      ${body ? `<div class="mb">${body}</div>` : ""}
+      <div class="mf">${buttons.map((b,i) => `<button class="btn ${b.cls||""}" data-i="${i}">${b.label}</button>`).join("")}</div></div></div>`;
+    const close = v => { root.innerHTML = ""; document.removeEventListener("keydown", onKey); resolve(v); };
+    const onKey = e => { if (e.key === "Escape") close(null); };
+    document.addEventListener("keydown", onKey);
+    root.querySelector(".scrim").addEventListener("mousedown", e => { if (e.target.classList.contains("scrim")) close(null); });
+    buttons.forEach((b,i) => {
+      const el = root.querySelector(`[data-i="${i}"]`);
+      el.addEventListener("click", () => close(b.value));
+      if (b.disabledUntil) { el.disabled = true; root.querySelector(b.disabledUntil).addEventListener("change", ev => el.disabled = !ev.target.checked); }
+    });
+    root.querySelector(".mf .btn:last-child")?.focus();
+  });
+}
+
+/* ---------- login ---------- */
+$("#lform").addEventListener("submit", async e => {
+  e.preventDefault();
+  const btn = $("#lbtn"); btn.disabled = true; btn.textContent = "Signing in…";
+  const r = await api().login($("#lu").value, $("#lp").value);
+  if (r.ok) { S.user = r.user; enterApp(); }
+  else {
+    $("#lerr").textContent = "Invalid username or password";
+    $("#lp").value = ""; $("#lp").focus();
+    $(".lcard").classList.remove("shake"); void $(".lcard").offsetWidth; $(".lcard").classList.add("shake");
+  }
+  btn.disabled = false; btn.textContent = "Sign in";
+});
+
+function enterApp(){
+  $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
+  $("#who").textContent = S.user; $("#av").textContent = S.user[0];
+  renderNav(); go("home");
+}
+$("#signout").addEventListener("click", async () => {
+  const ok = await modal({icon:"logout", title:"Sign out?", text:"You'll go back to the sign-in screen.",
+    buttons:[{label:"Cancel", value:false}, {label:"Sign out", value:true, cls:"primary"}]});
+  if (!ok) return;
+  const r = await api().logout();
+  if (!r.ok) return toast(r.error, "fail");
+  S.user = null; S.per = {};
+  $("#app").classList.add("hidden"); $("#login").classList.remove("hidden");
+  $("#lp").value = ""; $("#lerr").textContent = ""; $("#lu").focus();
+});
+
+/* ---------- navigation ---------- */
+function renderNav(){
+  const sc = S.boot.scripts;
+  let h = navItem("home","home","Home") ;
+  for (const g of GROUPS) {
+    h += `<div class="ngroup">${g}</div>`;
+    for (const s of sc.filter(x => x.group === g)) h += navItem(s.id, s.icon, s.name, s);
+  }
+  h += `<div class="ngroup">Workspace</div>` + navItem("reports","report","Reports & history") + navItem("settings","settings","Settings");
+  $("#nav").innerHTML = h;
+  $("#nav").onclick = e => { const b = e.target.closest(".nitem"); if (b) go(b.dataset.id); };
+  markNav();
+}
+function navItem(id, icon, name, s){
+  const p = S.per[id];
+  const right = p?.running ? `<span class="spin"><span class="spinner"></span></span>`
+              : s?.sensitive ? `<span class="tag">FUNDS</span>` : "";
+  return `<button class="nitem" data-id="${id}">${ic(icon)}<span>${esc(name)}</span>${right}</button>`;
+}
+function markNav(){ document.querySelectorAll(".nitem").forEach(b => b.classList.toggle("active", b.dataset.id === S.page)); }
+function refreshNav(){ const st = $("#nav").scrollTop; renderNav(); $("#nav").scrollTop = st; }
+function go(id){
+  S.page = id; markNav();
+  const m = $("#main"); m.scrollTop = 0;
+  if (id === "home") renderHome();
+  else if (id === "reports") renderReports();
+  else if (id === "settings") renderSettings();
+  else renderScript(id);
+}
+const script = id => S.boot.scripts.find(s => s.id === id);
+
+/* ---------- home ---------- */
+async function renderHome(){
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  $("#main").innerHTML = `<div class="page">
+    <div class="hero"><svg class="w" width="520" height="220" viewBox="0 0 520 220" fill="none" stroke="#fff" stroke-width="1.2">
+      ${[0,1,2,3,4,5].map(i => `<path d="M0 ${120+i*14} C 130 ${60+i*14}, 260 ${180+i*14}, 520 ${100+i*14}" opacity="${.9-i*.13}"/>`).join("")}</svg>
+      <h2>${greet}, ${esc(S.user)}</h2><p>Pick a task below, or choose one from the sidebar.</p></div>
+    <div class="tiles" id="tiles">${[0,1,2,3].map(() => `<div class="card tile"><small>&nbsp;</small><b>–</b><span>&nbsp;</span></div>`).join("")}</div>
+    <div class="sec"><h3>Quick start</h3></div>
+    <div class="quick">${S.boot.scripts.map(s => `<button class="qbtn" data-id="${s.id}"><div class="qi">${ic(s.icon)}</div>
+      <div><b>${esc(s.name)}</b><small>${s.sensitive ? "Moves funds · needs approval" : esc(s.group)}</small></div></button>`).join("")}</div>
+    <div class="sec"><h3>Recent runs</h3><span class="sp"></span><button class="btn sm ghost" id="allh">See all</button></div>
+    <div class="card" id="recent"><div class="emptybox"><span class="spinner dark"></span></div></div></div>`;
+  $("#main").querySelectorAll(".qbtn").forEach(b => b.onclick = () => go(b.dataset.id));
+  $("#allh").onclick = () => go("reports");
+  const [hist, reports] = await Promise.all([api().history(), api().list_reports(500)]);
+  if (S.page !== "home") return;
+  const today = new Date().toISOString().slice(0,10);
+  const todays = hist.filter(h => (h.when||"").startsWith(today));
+  const okToday = todays.filter(h => h.status === "ok").length;
+  const last = hist[0];
+  const running = Object.values(S.per).filter(p => p.running).length;
+  const tiles = [
+    ["Runs today", todays.length, todays.length ? `${okToday} finished without errors` : "Nothing run yet today"],
+    ["Running now", running, running ? "Open the script to watch" : "Idle"],
+    ["Last run", last ? esc(last.script) : "–", last ? `${relTime(last.when)} · ${statusWord(last.status)}` : "No runs recorded yet"],
+    ["Reports", reports.length, "Excel reports in Files-report"],
+  ];
+  $("#tiles").innerHTML = tiles.map(([a,b,c]) => `<div class="card tile"><small>${a}</small><b style="${String(b).length>10?"font-size:19px;margin:9px 0 4px":""}">${b}</b><span>${c}</span></div>`).join("");
+  $("#recent").innerHTML = historyTable(hist.slice(0, 6));
+  bindHistory($("#recent"));
+}
+function statusWord(s){ return s === "ok" ? "Completed" : s === "stopped" ? "Stopped" : "Errors"; }
+function statusPill(s){ return `<span class="pill ${s === "ok" ? "ok" : s === "stopped" ? "mute" : "fail"}">${statusWord(s)}</span>`; }
+function relTime(iso){
+  const d = new Date(iso), s = (Date.now() - d) / 1000;
+  if (s < 60) return "just now"; if (s < 3600) return `${Math.floor(s/60)} min ago`;
+  if (s < 86400) return `${Math.floor(s/3600)} h ago`;
+  return d.toLocaleDateString(undefined, {day:"numeric", month:"short"}) + " " + d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"});
+}
+function historyTable(hist){
+  if (!hist.length) return `<div class="emptybox">No runs yet. Runs you start from this app will show up here.</div>`;
+  return `<table class="list"><tr><th>When</th><th>Script</th><th>File</th><th>Result</th><th>By</th><th></th></tr>
+    ${hist.map(h => { const sm = h.summary;
+      return `<tr><td>${relTime(h.when)}</td><td><b>${esc(h.script)}</b></td><td class="mono" style="font-size:12px">${esc(h.file)}</td>
+      <td>${statusPill(h.status)} ${sm ? `<span style="color:var(--text3);font-size:12px;margin-left:6px">${sm.ok} ok · ${sm.fail} failed · ${sm.skip} skipped</span>` : ""}</td>
+      <td>${esc(h.user||"")}</td>
+      <td><div class="acts">${h.report ? `<button class="btn sm ghost" data-open="${esc(h.report)}">${ic("open")}Open report</button>` : ""}</div></td></tr>`; }).join("")}</table>`;
+}
+function bindHistory(el){
+  el.querySelectorAll("[data-open]").forEach(b => b.onclick = async () => { if (!await api().open_file(b.dataset.open)) toast("That report file is no longer there.", "fail"); });
+}
+
+/* ---------- reports ---------- */
+async function renderReports(){
+  $("#main").innerHTML = `<div class="page">
+    <div class="phead"><div class="pic">${ic("report")}</div><div><h2>Reports & history</h2><p>Every Excel report in the Files-report folder, and every run started from this app.</p></div>
+      <div class="right"><button class="btn" id="ofold">${ic("folder")}Open folder</button></div></div>
+    <div class="sec" style="margin-top:0"><h3>Run history</h3></div><div class="card" id="hist"><div class="emptybox"><span class="spinner dark"></span></div></div>
+    <div class="sec"><h3>Reports</h3><span class="sp"></span></div><div class="card" id="reps"><div class="emptybox"><span class="spinner dark"></span></div></div></div>`;
+  $("#ofold").onclick = () => api().open_folder("reports");
+  const [hist, reps] = await Promise.all([api().history(), api().list_reports(80)]);
+  if (S.page !== "reports") return;
+  $("#hist").innerHTML = historyTable(hist.slice(0, 25)); bindHistory($("#hist"));
+  $("#reps").innerHTML = !reps.length ? `<div class="emptybox">No reports yet.</div>` :
+    `<table class="list"><tr><th>Report</th><th>Created</th><th>Size</th><th></th></tr>${reps.map(r => `<tr>
+      <td><b>${esc(r.name)}</b></td><td>${relTime(new Date(r.mtime*1000).toISOString())}</td><td>${(r.size/1024).toFixed(0)} KB</td>
+      <td><div class="acts"><button class="btn sm ghost" data-a="open" data-p="${esc(r.path)}">${ic("open")}Open</button>
+      <button class="btn sm ghost" data-a="reveal" data-p="${esc(r.path)}">${ic("folder")}Show</button>
+      <button class="btn sm ghost" data-a="save" data-p="${esc(r.path)}">${ic("save")}Save as…</button></div></td></tr>`).join("")}</table>`;
+  $("#reps").querySelectorAll("[data-a]").forEach(b => b.onclick = () => reportAction(b.dataset.a, b.dataset.p));
+}
+async function reportAction(a, p){
+  if (a === "open") { if (!await api().open_file(p)) toast("That report file is no longer there.", "fail"); }
+  else if (a === "reveal") api().reveal(p);
+  else { const r = await api().save_report_as(p); if (r.ok) toast("Report saved", "ok"); else if (r.error) toast(r.error, "fail"); }
+}
+
+/* ---------- settings ---------- */
+async function renderSettings(){
+  $("#main").innerHTML = `<div class="page">
+    <div class="phead"><div class="pic">${ic("settings")}</div><div><h2>Settings</h2><p>Appearance, health check, folders and team access.</p></div></div>
+    <div class="sgrid">
+      <div class="card"><div class="ch">${ic("sun")}<h3>Colour mode</h3></div><div class="cb">
+        <div class="kv"><span class="k">Theme</span><div class="seg2">
+          <button data-theme-set="yellow"><span class="sw yellow" style="display:inline-block;margin-right:6px;vertical-align:-1px"></span>Yellow</button><button data-theme-set="maroon"><span class="sw maroon" style="display:inline-block;margin-right:6px;vertical-align:-1px"></span>Maroon</button></div></div></div></div>
+      <div class="card"><div class="ch">${ic("shield")}<h3>Health check</h3><span class="aside"><button class="btn sm ghost" id="recheck">${ic("refresh")}Check again</button></span></div>
+        <div class="cb" id="health"><div class="emptybox"><span class="spinner dark"></span></div></div></div>
+      <div class="card"><div class="ch">${ic("folder")}<h3>Folders</h3></div><div class="cb">
+        ${[["reports","Reports","Files-report"],["input","Input files","Input-file"],["scripts","Scripts","scripts"],["app","App folder","bulk_run"]]
+          .map(([k,l,f]) => `<div class="kv"><span class="k">${l}</span><span class="v mono" style="font-size:12px">${f}</span><button class="btn sm ghost" data-f="${k}">${ic("open")}Open</button></div>`).join("")}</div></div>
+      <div class="card"><div class="ch">${ic("team")}<h3>Team members</h3></div><div class="cb">
+        ${S.boot.users.map(u => `<div class="kv"><div class="avatar" style="width:28px;height:28px;font-size:12px">${esc(u[0])}</div><span class="k" style="color:var(--text)"><b>${esc(u)}</b></span><span class="pill ok">Active</span></div>`).join("")}</div></div>
+      <div class="card"><div class="ch">${ic("info")}<h3>About</h3></div><div class="cb">
+        <div class="kv"><span class="k">Version</span><span class="v">Bulk Run ${esc(S.boot.version)}</span></div>
+        <div class="kv"><span class="k">Scripts</span><span class="v">${S.boot.scripts.length}</span></div>
+        <div class="kv"><span class="k">Use</span><span class="v">Internal operations tool — not for external distribution</span></div></div></div>
+    </div></div>`;
+  applyTheme(S.theme);
+  $("#main").querySelectorAll("[data-theme-set]").forEach(b => b.onclick = () => setTheme(b.dataset.themeSet));
+  $("#main").querySelectorAll("[data-f]").forEach(b => b.onclick = () => api().open_folder(b.dataset.f));
+  $("#recheck").onclick = loadHealth;
+  loadHealth();
+}
+async function loadHealth(){
+  $("#health").innerHTML = `<div class="emptybox"><span class="spinner dark"></span></div>`;
+  const r = await api().env_check();
+  if (S.page !== "settings") return;
+  const libs = r.libs || {};
+  const bad = Object.entries(libs).filter(([,v]) => v && !v.ok);
+  $("#health").innerHTML = `<div class="kv"><span class="k">Python</span><span class="v">${esc(r.python)}</span></div>
+    ${Object.entries(libs).map(([k,v]) => `<div class="kv"><span class="k">${esc(k)}</span>${v.ok
+      ? `<span class="v">${esc(v.version)}</span><span class="pill ok">${ic("check")}OK</span>`
+      : `<span class="v" style="color:var(--fail);font-weight:500;font-size:12px">${esc(v.error)}</span><span class="pill fail">Problem</span>`}</div>`).join("")}
+    <div class="kv"><span class="k">API keys Tenants.xlsx</span>${r.keys_file ? `<span class="pill ok">${ic("check")}Found</span>` : `<span class="pill fail">Missing</span>`}</div>
+    ${bad.length ? `<div class="notice fail">${ic("alert")}<div>Some libraries can't load, so scripts will fail. Quit the app and run <span class="mono">python3 -m pip install -r requirements.txt</span> in the app folder.</div></div>` : ""}`;
+}
+
+/* ---------- script page ---------- */
+function renderScript(sid){
+  const s = script(sid), p = per(sid);
+  if (!p.values) p.values = {...s.saved};
+  const needCfg = s.fields.length > 0;
+  const n1 = needCfg ? 1 : 0;
+  $("#main").innerHTML = `<div class="page">
+    <div class="phead"><div class="pic">${ic(s.icon)}</div><div><h2>${esc(s.name)}</h2><p>${esc(s.desc)}</p></div>
+      <div class="right">${s.sensitive ? `<span class="pill sens">${ic("shield")}Sensitive · moves funds</span>` : ""}
+      ${s.has_template ? `<button class="btn sm" id="tpl">${ic("save")}Get template</button>` : ""}</div></div>
+    ${!s.script_found ? `<div class="notice fail" style="margin:0 0 16px">${ic("alert")}<div><b>${esc(s.script)}</b> is missing from the scripts folder.</div></div>` : ""}
+    <div class="grid2">
+      <div class="stack">
+        ${needCfg ? `<div class="card"><div class="ch"><span class="step" id="st1">1</span><h3>Credentials</h3><span class="aside">Saved on this computer</span></div><div class="cb">
+          ${s.fields.map(f => `<div class="field"><label>${esc(f.label)}</label><div class="inp">
+            <input data-k="${f.key}" type="${f.pw ? "password" : "text"}" spellcheck="false" value="${esc(p.values[f.key]||"")}" placeholder="Enter ${esc(f.label)}">
+            ${f.pw ? `<button data-eye="${f.key}" title="Show / hide">${ic("eye")}</button>` : ""}</div></div>`).join("")}
+          <div class="saverow"><button class="btn sm" id="savecfg">${ic("check")}Save</button><small id="savedmsg"></small></div></div></div>` : ""}
+        <div class="card"><div class="ch"><span class="step" id="st2">${n1+1}</span><h3>Input file</h3><span class="aside">${s.excel ? "CSV or Excel" : "CSV"}</span></div>
+          <div class="cb" id="filebox"></div></div>
+        <div class="card"><div class="ch"><span class="step" id="st3">${n1+2}</span><h3>Run</h3><span class="aside"><kbd>⌘</kbd> <kbd>↵</kbd></span></div><div class="cb">
+          <div class="runrow" id="runrow"></div><div class="runmeta" id="runmeta"></div></div></div>
+      </div>
+      <div class="card runpanel" id="rp"></div>
+    </div></div>`;
+  if (s.has_template) $("#tpl").onclick = async () => { const r = await api().save_template(sid); if (r.ok) toast("Template saved", "ok"); else if (r.error) toast(r.error, "fail"); };
+  if (needCfg) {
+    $("#main").querySelectorAll("input[data-k]").forEach(i => i.oninput = () => { p.values[i.dataset.k] = i.value; $("#savedmsg").textContent = "Not saved yet"; markSteps(sid); });
+    $("#main").querySelectorAll("[data-eye]").forEach(b => b.onclick = () => {
+      const i = $(`input[data-k="${b.dataset.eye}"]`); const show = i.type === "password";
+      i.type = show ? "text" : "password"; b.innerHTML = ic(show ? "eyeoff" : "eye"); });
+    $("#savecfg").onclick = async () => { await api().save_config(sid, p.values); s.saved = {...p.values}; $("#savedmsg").textContent = "Saved ✓"; toast("Credentials saved", "ok"); };
+  }
+  renderFile(sid); renderRunControls(sid); renderRunPanel(sid); markSteps(sid);
+}
+function cfgDone(sid){ const s = script(sid), p = per(sid); return s.fields.every(f => String(p.values?.[f.key]||"").trim()); }
+function markSteps(sid){
+  if (S.page !== sid) return;
+  const p = per(sid);
+  $("#st1")?.classList.toggle("done", cfgDone(sid));
+  $("#st2")?.classList.toggle("done", !!(p.file && !p.file.error));
+  $("#st3")?.classList.toggle("done", !!p.result && p.result.status === "ok");
+}
+
+function renderFile(sid){
+  const s = script(sid), p = per(sid), box = $("#filebox"); if (!box) return;
+  const f = p.file;
+  if (!f) {
+    box.innerHTML = `<div class="drop" id="pick"><div class="big">${ic("upload")}</div><b>Choose a file</b><small>${s.excel ? "CSV or Excel (.xlsx)" : "CSV file"} · opens in Input-file</small></div>
+      <div class="hint">${esc(s.hint)}</div>`;
+    $("#pick").onclick = () => pick(sid);
+    return;
+  }
+  const chips = [];
+  if (f.rows != null) chips.push(`<span class="chip">${ic("report")}${f.rows} rows</span>`);
+  if (s.columns.length && !f.error) chips.push(f.missing.length ? `<span class="chip fail">${ic("x")}${f.missing.length} column${f.missing.length>1?"s":""} missing</span>`
+                                                    : `<span class="chip ok">${ic("check")}All expected columns</span>`);
+  if (f.dry_run) {
+    if (f.dry_run.dry) chips.push(`<span class="chip ok" title="dry_run = TRUE">${f.dry_run.dry} dry run (test only)</span>`);
+    if (f.dry_run.live) chips.push(`<span class="chip warn" title="dry_run is not TRUE — these rows really move funds">${f.dry_run.live} live — real money</span>`);
+  }
+  for (const t of f.totals || []) chips.push(`<span class="chip">${esc(t.currency)} ${fmtAmt(t.amount)}</span>`);
+  box.innerHTML = `<div class="file"><div class="ficon">${ic("file")}</div><div class="fname"><b title="${esc(f.path)}">${esc(f.name)}</b><small>${f.columns.length} columns</small></div>
+      <button class="btn sm ghost" id="chg" ${p.running?"disabled":""}>Change</button><button class="btn sm ghost" id="clr" title="Remove" ${p.running?"disabled":""}>${ic("x")}</button></div>
+    ${f.error ? `<div class="notice fail">${ic("alert")}<div>${esc(f.error)}</div></div>` : ""}
+    <div class="chips">${chips.join("")}</div>
+    ${f.missing.length ? `<div class="notice fail">${ic("alert")}<div>Missing: <b>${f.missing.map(esc).join(", ")}</b>. The script may skip or fail these rows.</div></div>` : ""}
+    ${f.warnings.map(w => `<div class="notice warn">${ic("alert")}<div>${esc(w)}</div></div>`).join("")}
+    ${f.preview.length ? `<div style="margin-top:10px"><button class="btn sm ghost" id="pv">${ic("eye")}${p.showPreview ? "Hide" : "Preview"} first rows</button></div>
+      ${p.showPreview ? `<div class="tablewrap"><table class="t"><tr>${f.columns.map(c => `<th>${esc(c)}</th>`).join("")}</tr>
+        ${f.preview.map(r => `<tr>${r.map(v => `<td>${esc(v)}</td>`).join("")}</tr>`).join("")}</table></div>` : ""}` : ""}`;
+  $("#chg").onclick = () => pick(sid);
+  $("#clr").onclick = () => { p.file = null; renderFile(sid); renderRunControls(sid); markSteps(sid); updateRunTop(sid); };
+  const pv = $("#pv"); if (pv) pv.onclick = () => { p.showPreview = !p.showPreview; renderFile(sid); };
+}
+const fmtAmt = n => Number(n).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+async function pick(sid){
+  const p = per(sid);
+  const info = await api().pick_file(sid);
+  if (!info) return;
+  p.file = info; p.showPreview = false;
+  if (S.page === sid) { renderFile(sid); renderRunControls(sid); markSteps(sid); updateRunTop(sid); }
+}
+
+function renderRunControls(sid){
+  const p = per(sid), row = $("#runrow"); if (!row) return;
+  if (p.running) {
+    row.innerHTML = `<button class="btn go" disabled><span class="spinner"></span>Running…</button><button class="btn danger" id="stop">${ic("stop")}Stop</button>`;
+    $("#stop").onclick = () => stopRun(sid);
+    $("#runmeta").textContent = "You can switch to other pages; the script keeps running.";
+    return;
+  }
+  row.innerHTML = `<button class="btn go" id="run">${ic("play")}Run script</button>
+    <button class="btn" id="chk" ${p.file ? "" : "disabled"}>${ic("shield")}Check only</button>`;
+  $("#run").onclick = () => startRun(sid);
+  $("#chk").onclick = () => openChecks(sid, false);
+  const missing = [];
+  if (!cfgDone(sid)) missing.push("credentials");
+  if (!p.file) missing.push("a file");
+  const last = p.check && p.checkFor === checkKey(sid) ? p.check : null;
+  $("#runmeta").innerHTML = missing.length ? `Add ${missing.join(" and ")} to run.`
+    : !last ? `Every run starts with checks: connection / VPN, credentials and the file.`
+    : last.fail ? `<span style="color:var(--fail)">${ic("alert","sm")} Last check: ${last.fail} problem${last.fail>1?"s":""} to fix</span> · <a href="#" id="viewchk">View</a>`
+    : last.warn ? `<span style="color:var(--warn)">Last check: ${last.warn} warning${last.warn>1?"s":""}</span> · <a href="#" id="viewchk">View</a>`
+    : `<span style="color:var(--ok)">${ic("check","sm")} Last check passed ${relTime(last.when)}</span>`;
+  const v = $("#viewchk"); if (v) v.onclick = e => { e.preventDefault(); openChecks(sid, false, last); };
+}
+const checkKey = sid => { const p = per(sid); return JSON.stringify([p.file?.path, p.values]); };
+
+async function startRun(sid){
+  const s = script(sid), p = per(sid);
+  if (p.running) return;
+  if (!cfgDone(sid)) { toast(`Enter the ${s.fields.find(f => !String(p.values?.[f.key]||"").trim()).label} first`, "fail"); return; }
+  if (!p.file) { toast("Choose a file first", "fail"); return; }
+  if (s.fields.length) { await api().save_config(sid, p.values); s.saved = {...p.values}; if ($("#savedmsg")) $("#savedmsg").textContent = "Saved ✓"; }
+  const ok = await openChecks(sid, true);
+  if (!ok) return;
+  const f = p.file;
+  p.lines = []; p.live = {ok:0,fail:0,skip:0}; p.row = null; p.prog = null; p.result = null; p.filter = "all"; p.paused = false;
+  sysLine(p, `▶  Starting ${s.script}`); sysLine(p, `   File: ${f.name}  ·  ${f.rows ?? "?"} rows`);
+  sysLine(p, `   Pre-run checks passed${p.check?.warn ? ` with ${p.check.warn} warning(s) reviewed` : ""}`);
+  p.lines.push({t:"─".repeat(62), c:"sep"});
+  const r = await api().run_script(sid, f.path, p.values);
+  if (!r.ok) { toast(r.error, "fail"); p.lines = []; return; }
+  p.running = true; p.started = Date.now(); p.check = null;
+  refreshNav();
+  if (S.page === sid) { renderRunControls(sid); renderRunPanel(sid); renderFile(sid); markSteps(sid); }
+}
+
+/* ---------- pre-run checks ---------- */
+const CHECK_ICON = {pass:"check", fail:"x", warn:"alert", skip:"info"};
+function checksHtml(res){
+  return `<div class="checks">${res.checks.map(c => `<div class="ck ${c.status}">
+    <div class="cki">${ic(CHECK_ICON[c.status])}</div>
+    <div class="ckb"><b>${esc(c.label)}</b><span>${esc(c.detail)}</span>
+      ${c.items.length ? `<ul>${c.items.map(i => `<li>${esc(i)}</li>`).join("")}${c.more ? `<li>…and ${c.more} more</li>` : ""}</ul>` : ""}</div></div>`).join("")}</div>`;
+}
+function runSummary(s, f){
+  const rows = [["File", esc(f.name)], ["Rows", f.rows ?? "?"]];
+  if (f.dry_run) rows.push(["Live / dry run", `${f.dry_run.live} live · ${f.dry_run.dry} dry run`]);
+  for (const t of f.totals||[]) rows.push([`Total ${esc(t.currency)}`, fmtAmt(t.amount)]);
+  return `<div class="summary">${rows.map(([a,b]) => `<div><span>${a}</span><b>${b}</b></div>`).join("")}</div>`;
+}
+// forRun: true = Run button (resolves true when the user clicks Run now); false = check only / view
+function openChecks(sid, forRun, given){
+  const s = script(sid), p = per(sid);
+  return new Promise(resolve => {
+    const root = $("#modalRoot");
+    let closed = false;
+    const close = v => { if (closed) return; closed = true; root.innerHTML = ""; document.removeEventListener("keydown", onKey); resolve(v); };
+    const onKey = e => { if (e.key === "Escape") close(false); };
+    document.addEventListener("keydown", onKey);
+    const shell = (icon, kind, title, text, body, foot, pinned = "") => {
+      const inner = `<div class="mh"><div class="mi ${kind}">${icon}</div><div><h3>${title}</h3><p>${text}</p></div></div>
+        <div class="mb scroll">${body}</div>${pinned ? `<div class="mb pinned">${pinned}</div>` : ""}<div class="mf">${foot}</div>`;
+      const existing = root.querySelector(".modal.wide");
+      if (existing) { existing.innerHTML = inner; return; }      // update in place, no re-animation
+      root.innerHTML = `<div class="scrim"><div class="modal wide" role="dialog">${inner}</div></div>`;
+      root.querySelector(".scrim").addEventListener("mousedown", e => { if (e.target.classList.contains("scrim")) close(false); });
+    };
+    const show = res => {
+      if (closed) return;
+      p.check = res; p.checkFor = checkKey(sid);
+      if (S.page === sid) renderRunControls(sid);
+      const bad = res.fail > 0;
+      const title = bad ? `${res.fail} problem${res.fail > 1 ? "s" : ""} to fix before running` :
+                    res.warn ? `Checks passed with ${res.warn} warning${res.warn > 1 ? "s" : ""}` : "All checks passed";
+      const text = bad ? "Nothing was run. Fix the items marked in red, then check again."
+                 : forRun ? (s.sensitive ? `${esc(s.name)} moves funds. Review the details, then run.` : "Everything needed for this run looks right.")
+                 : "This was a check only — nothing was run.";
+      const ticks = !bad && forRun ? `${res.warn ? `<label class="check"><input type="checkbox" class="tick"><span>I've reviewed the warnings above and want to run anyway.</span></label>` : ""}
+        ${s.sensitive ? `<label class="check"><input type="checkbox" class="tick"><span>I've consulted my superior and have approval to run this. It will move funds and may change user or account statuses.</span></label>` : ""}` : "";
+      const body = (forRun && !bad ? runSummary(s, p.file) : "") + checksHtml(res);
+      const foot = bad || !forRun
+        ? `<button class="btn ghost" data-a="close">Close</button><button class="btn primary" data-a="again">${ic("refresh")}Check again</button>`
+        : `<button class="btn ghost" data-a="close">Cancel</button><button class="btn ${s.sensitive ? "primary" : "go"}" data-a="run">${ic("play")}Run now</button>`;
+      shell(ic(bad ? "x" : res.warn ? "alert" : "check"), bad ? "fail" : res.warn ? "warn" : "ok", title, text, body, foot, ticks.trim());
+      const runBtn = root.querySelector('[data-a="run"]');
+      const ticksEls = [...root.querySelectorAll(".tick")];
+      const sync = () => { if (runBtn) runBtn.disabled = ticksEls.some(t => !t.checked); };
+      ticksEls.forEach(t => t.addEventListener("change", sync)); sync();
+      root.querySelector('[data-a="close"]').onclick = () => close(false);
+      const again = root.querySelector('[data-a="again"]'); if (again) again.onclick = run;
+      if (runBtn) runBtn.onclick = () => close(true);
+      (runBtn && !runBtn.disabled ? runBtn : root.querySelector(".mf .btn:last-child")).focus();
+    };
+    const run = async () => {
+      shell(`<span class="spinner dark" style="width:20px;height:20px"></span>`, "info", `Checking before you run ${esc(s.name)}`,
+        "Connection / VPN, credentials, the file and the accounts in it. Nothing is changed.",
+        `<div class="checks">${["Libraries and script", "Credentials", "File format, columns and values", "Connection to the platform (VPN)", "API keys and accounts"]
+          .map(l => `<div class="ck pending"><div class="cki"><span class="spinner dark"></span></div><div class="ckb"><b>${l}</b></div></div>`).join("")}</div>`,
+        `<button class="btn ghost" data-a="close">Cancel</button>`);
+      root.querySelector('[data-a="close"]').onclick = () => close(false);
+      let res;
+      try { res = await api().preflight(sid, p.file?.path, p.values || {}); } catch (e) { res = null; }
+      if (!res || !Array.isArray(res.checks))
+        res = {checks:[{id:"crash", label:"Pre-run checks", status:"fail", detail:"The checks couldn't run. Restart the app and try again.", items:[], more:0}], fail:1, warn:0, ok:false, when:new Date().toISOString()};
+      show(res);
+    };
+    if (given) show(given); else run();
+  });
+}
+async function stopRun(sid){
+  const ok = await modal({icon:"stop", kind:"warn", title:"Stop the script?", text:"Rows already processed stay processed. The rest won't run.",
+    buttons:[{label:"Keep running", value:false}, {label:"Stop", value:true, cls:"danger"}]});
+  if (ok) api().stop_script(sid);
+}
+function sysLine(p, t){ p.lines.push({t, c:"sys"}); }
+
+/* ---------- output parsing ---------- */
+function classify(t){
+  if (/^\[PAUSED\]/.test(t)) return "warn";
+  if (/^\[RESUMED\]/.test(t)) return "ok";
+  if (/^\[\d+\/\d+\]/.test(t)) return "row";
+  if (/^Done\./.test(t)) return "done";
+  if (/^[-=─]{10,}$/.test(t.trim())) return "sep";
+  if (/\[FAIL\]|\[ERROR\]|✗|Traceback|^\s*File "|Error:|ERROR:|FAILED/.test(t)) return "fail";
+  if (/\[SKIP\]|\[WARN\]|⊘|\[TIMEOUT\]|\[RETRY\]|DRY RUN|⚠/.test(t)) return "warn";
+  if (/\[OK\]|✓|SUCCESS|successful/i.test(t)) return "ok";
+  if (/^(Loading|Total rows|Auto|Starting)|\[REPORT\]|Report:|\[INFO\]/.test(t.trim())) return "info";
+  return "";
+}
+function commitRow(p){
+  const r = p.row; if (!r) return;
+  if (r.success) p.live.ok++; else if (r.fail) p.live.fail++; else if (r.skip) p.live.skip++; else if (r.okish) p.live.ok++;
+  p.row = null;
+}
+function track(p, t, c){
+  const m = t.match(/^\[(\d+)\/(\d+)\]/);
+  if (m) { commitRow(p); p.row = {}; p.prog = {i:+m[1], n:+m[2]}; return; }
+  if (c === "done") { commitRow(p); return; }
+  if (!p.row) return;
+  if (/successful|SUCCESS|✓/.test(t)) p.row.success = true;
+  if (/\[FAIL\]|\[ERROR\]|✗|FAILED/.test(t)) p.row.fail = true;
+  if (/\[SKIP\]|⊘/.test(t)) p.row.skip = true;
+  if (/\[OK\]/.test(t)) p.row.okish = true;
+}
+
+window.ops = {
+  onLines({sid, lines}){
+    const p = per(sid);
+    for (const t of lines) {
+      const c = classify(t); p.lines.push({t, c}); track(p, t, c);
+      if (/^\[PAUSED\]/.test(t)) { p.paused = true; toast("No internet — the run is paused and will continue by itself", "fail"); }
+      if (/^\[RESUMED\]/.test(t)) { p.paused = false; toast("Internet is back — the run continues", "ok"); }
+    }
+    if (p.lines.length > MAX_LINES) p.lines.splice(0, p.lines.length - MAX_LINES);
+    if (S.page === sid) { appendConsole(p, lines.length); updateRunTop(sid); }
+  },
+  onDone(res){
+    const p = per(res.sid), s = script(res.sid);
+    if (p.row) commitRow(p);
+    p.running = false; p.result = res; p.paused = false;
+    const msg = res.status === "ok" ? "✅  Completed successfully" : res.status === "stopped" ? "⏹  Stopped by you" : `⚠  Finished with errors (exit code ${res.code})`;
+    p.lines.push({t:"", c:""}, {t:msg, c: res.status === "ok" ? "ok" : res.status === "stopped" ? "warn" : "fail"});
+    if (res.report_name) p.lines.push({t:`📊  Report: ${res.report_name}`, c:"info"});
+    refreshNav();
+    if (S.page === res.sid) { renderRunControls(res.sid); renderRunPanel(res.sid); renderFile(res.sid); markSteps(res.sid); }
+    toast(`${s.name}: ${res.status === "ok" ? "completed" : res.status === "stopped" ? "stopped" : "finished with errors"}`, res.status === "ok" ? "ok" : "fail");
+  },
+  async askQuit(){
+    const names = Object.entries(S.per).filter(([,p]) => p.running).map(([id]) => script(id).name);
+    const ok = await modal({icon:"alert", kind:"warn", title:"A script is still running",
+      text:`${names.join(", ")} is still running. Quitting now stops it part-way through.`,
+      buttons:[{label:"Keep app open", value:false}, {label:"Stop and quit", value:true, cls:"danger"}]});
+    if (ok) api().force_quit();
+  }
+};
+
+/* ---------- run panel ---------- */
+function renderRunPanel(sid){
+  const p = per(sid), rp = $("#rp"); if (!rp) return;
+  const res = p.result;
+  rp.innerHTML = `<div class="rtop" id="rtop"></div>
+    ${res ? `<div class="result ${res.status}">${ic(res.status === "ok" ? "check" : "alert")}
+      <div class="rt"><b>${res.status === "ok" ? "Completed" : res.status === "stopped" ? "Stopped" : "Finished with errors"}</b>
+      <small>${res.report_name ? esc(res.report_name) : "No Excel report was created"}${res.seconds ? ` · ${fmtDur(res.seconds)}` : ""}</small>
+      ${res.status === "error" ? `<small style="display:block;margin-top:2px">${esc(crashHint(p))}</small>` : ""}</div>
+      ${res.report ? `<button class="btn sm primary" data-a="open">${ic("open")}Open report</button>
+        <button class="btn sm" data-a="save">${ic("save")}Save as…</button><button class="btn sm ghost" data-a="reveal" title="Show in folder">${ic("folder")}</button>` : ""}</div>` : ""}
+    <div class="ctool"><div class="seg"><button data-f="all" class="${p.filter==="all"?"on":""}">All output</button><button data-f="errs" class="${p.filter==="errs"?"on":""}">Problems only</button></div>
+      <span class="sp"></span><button class="cbtn" id="copy">${ic("copy")}Copy</button><button class="cbtn" id="clear" ${p.running?"disabled":""}>${ic("trash")}Clear</button></div>
+    <div class="console ${p.filter==="errs"?"errs":""}" id="con"></div>`;
+  rp.querySelectorAll(".result [data-a]").forEach(b => b.onclick = () => reportAction(b.dataset.a, res.report));
+  rp.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { p.filter = b.dataset.f; renderRunPanel(sid); });
+  $("#copy").onclick = () => { navigator.clipboard.writeText(p.lines.map(l => l.t).join("\n")).then(() => toast("Output copied", "ok")); };
+  $("#clear").onclick = () => { if (p.running) return; p.lines = []; p.result = null; p.prog = null; p.live = {ok:0,fail:0,skip:0}; renderRunPanel(sid); markSteps(sid); };
+  const con = $("#con");
+  if (!p.lines.length) con.innerHTML = `<div class="empty"><div>${ic("terminal")}<div>Output from the script appears here while it runs.</div></div></div>`;
+  else con.innerHTML = p.lines.map(lineHtml).join("");
+  updateRunTop(sid);
+  con.scrollTop = con.scrollHeight;
+  requestAnimationFrame(() => con.scrollTop = con.scrollHeight);
+}
+function crashHint(p){
+  const text = p.lines.map(l => l.t).join("\n");
+  if (/numpy\.dtype size changed|binary incompatibility|No module named/.test(text))
+    return "A Python library is missing or out of date. Settings → Health check shows which one.";
+  if (/Traceback/.test(text)) return "The script crashed. The red lines in the output say why — “Problems only” shows just those.";
+  if (/ERROR:/.test(text)) return "The script stopped early. See the ERROR line in the output.";
+  return "Some rows failed. Check the report and the red lines in the output.";
+}
+const lineHtml = l => `<div class="l ${l.c}">${esc(l.t) || "&nbsp;"}</div>`;
+function appendConsole(p, n){
+  const con = $("#con"); if (!con) return;
+  if (con.querySelector(".empty")) con.innerHTML = "";
+  const atBottom = con.scrollHeight - con.scrollTop - con.clientHeight < 60;
+  con.insertAdjacentHTML("beforeend", p.lines.slice(-n).map(lineHtml).join(""));
+  while (con.childElementCount > MAX_LINES) con.firstElementChild.remove();
+  if (atBottom) con.scrollTop = con.scrollHeight;
+}
+const fmtDur = s => s < 60 ? `${Math.round(s)}s` : `${Math.floor(s/60)}m ${Math.round(s%60)}s`;
+function updateRunTop(sid){
+  const p = per(sid), top = $("#rtop"); if (!top) return;
+  const res = p.result, sum = res?.summary;
+  const c = sum ? sum : p.live;
+  const total = p.prog?.n ?? p.file?.rows ?? null;
+  const done = res ? (p.prog?.i ?? 0) : Math.max(0, (p.prog?.i ?? 1) - 1);
+  const pct = res ? (res.status === "ok" ? 100 : total ? Math.round(100 * (p.prog?.i ?? 0) / total) : 0)
+                  : total ? Math.round(100 * done / total) : 0;
+  const state = p.running && p.paused ? `<span class="pill sens">${ic("alert")}Paused · waiting for internet</span>`
+              : p.running ? `<span class="pill run"><span class="spinner dark"></span>Running</span>`
+              : res ? statusPill(res.status) : `<span class="pill mute">Idle</span>`;
+  const el = p.running ? fmtDur((Date.now() - p.started)/1000) : res ? fmtDur(res.seconds) : "";
+  top.innerHTML = `<div class="row"><h3>Progress</h3>${state}<span class="elapsed">${el ? `${ic("clock")} ${el}` : ""}</span></div>
+    <div class="bar ${p.running && !p.prog ? "indet" : ""}"><i style="width:${pct}%"></i></div>
+    <div class="barlbl"><span>${p.prog ? `Row ${p.prog.i} of ${p.prog.n}` : p.running ? "Starting…" : total ? `${total} rows` : "No run yet"}</span><span>${(p.running || res) ? pct + "%" : ""}</span></div>
+    <div class="stats"><div class="stat ok"><b>${c.ok}</b><small>Success</small></div><div class="stat fail"><b>${c.fail}</b><small>Failed</small></div>
+      <div class="stat skip"><b>${c.skip}</b><small>Skipped</small></div><div class="stat"><b>${total ?? "–"}</b><small>Total rows</small></div></div>
+    ${p.running && !sum ? `<div style="color:var(--text3);font-size:11.5px;margin-top:8px">Counts are live estimates; the script's own totals replace them when it finishes.</div>` : ""}`;
+}
+setInterval(() => { const p = S.per[S.page]; if (p?.running) updateRunTop(S.page); }, 1000);
+
+/* ---------- keyboard ---------- */
+document.addEventListener("keydown", e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && S.user && script(S.page) && !$("#modalRoot").innerHTML) { e.preventDefault(); startRun(S.page); }
+});
+
+/* ---------- boot ---------- */
+async function boot(){
+  S.boot = await api().bootstrap();
+  S.prefs = S.boot.prefs || {};
+  applyTheme(S.prefs.theme || "maroon");
+  $("#lver").textContent = `Bulk Run ${S.boot.version} · sample data`;
+  $("#lu").focus();
+}
+if (window.pywebview?.api?.bootstrap) boot(); else window.addEventListener("pywebviewready", boot);
+})();
+</script>
+</body>
+</html>

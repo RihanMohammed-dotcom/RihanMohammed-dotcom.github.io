@@ -45,8 +45,8 @@
     W = canvas.clientWidth; H = canvas.clientHeight;
     canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    CX = small() ? W * 0.5 : W * 0.66; CY = small() ? H * 0.26 : H * 0.5;
-    R = Math.min(W * (small() ? 0.6 : 0.36), H * (small() ? 0.5 : 0.6));
+    CX = small() ? W * 0.52 : W * 0.65; CY = small() ? H * 0.27 : H * 0.5;
+    R = Math.min(W * (small() ? 0.7 : 0.45), H * (small() ? 0.56 : 0.8));
     paintNebula(); makeStars(); makeNetwork();
   }
   function paintNebula() {
@@ -62,10 +62,10 @@
   }
 
   // ---- stars: each one has a distance from the centre, an angle, a speed and a size
-  const ARMS = 3, TILT = 0.5;            // TILT squashes the circle into an ellipse, so it looks 3-D
+  const ARMS = 3, TILT = 0.5, ROT = -0.21;  // TILT squashes the circle into an ellipse (3-D look); ROT tilts the whole galaxy
   let stars = [];
   function makeStars() {
-    let n = Math.round(Math.min(3400, Math.max(800, (W * H) / 420)));
+    let n = Math.round(Math.min(4200, Math.max(900, (W * H) / 330)));
     if (small()) n = Math.round(n * 0.55);
     if (lowPower) n = Math.round(n * 0.6);
     stars = [];
@@ -97,7 +97,8 @@
     }
     edges.push([1, 1 + Math.floor((nodes.length - 1) / 2)]);              // one long route across the galaxy
   }
-  const pos = (d, a) => [CX + Math.cos(a) * d * R, CY + Math.sin(a) * d * R * TILT];
+  const cr = Math.cos(ROT), sr = Math.sin(ROT);
+  const pos = (d, a) => { const x = Math.cos(a) * d * R, y = Math.sin(a) * d * R * TILT; return [CX + x * cr - y * sr, CY + x * sr + y * cr]; };
   function nodePos(nd, t) { return nd.hub ? [CX, CY] : pos(nd.d, nd.a + t * 0.018); }
   function curve(p0, p1) {                                           // control point bends the path towards the centre
     const mx = (p0[0] + p1[0]) / 2, my = (p0[1] + p1[1]) / 2;
@@ -182,7 +183,7 @@
         continue; }
       for (let k = 0; k < 7; k++) {                                   // the comet tail
         const tt = Math.max(0, tx.t - k * 0.018), p = qb(c, tt);
-        ctx.globalAlpha = (1 - k / 7) * 0.9; ctx.fillStyle = k === 0 ? (C.light ? C.gold : "#fff8dc") : C.gold;
+        ctx.globalAlpha = (1 - k / 7) * 0.9; ctx.fillStyle = k === 0 ? (C.light ? "#fff6ef" : "#fff8dc") : C.gold;
         const r = k === 0 ? 2.6 : 2 - k * 0.22;
         ctx.beginPath(); ctx.arc(p[0], p[1], Math.max(0.4, r), 0, 6.283); ctx.fill();
       }
@@ -202,14 +203,51 @@
       g.addColorStop(0, fade(C.gold, 0.9)); g.addColorStop(1, fade(C.gold, 0));
       ctx.globalAlpha = (C.light ? 0.35 : 0.45) + nd.flash * 0.5; ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(x, y, base * (nd.hub ? 7 : 5), 0, 6.283); ctx.fill();
-      ctx.globalAlpha = 1; ctx.fillStyle = C.light ? C.gold : "#fffbe8";
+      ctx.globalAlpha = 1; ctx.fillStyle = C.light ? "#fff6ef" : "#fffbe8";   // bright core = the "shine"
       ctx.beginPath(); ctx.arc(x, y, base * (0.55 + nd.flash * 0.3), 0, 6.283); ctx.fill();
       if (nd.pulse > 0) {
         ctx.globalAlpha = nd.pulse * 0.8; ctx.strokeStyle = C.gold; ctx.lineWidth = 1.4;
         ctx.beginPath(); ctx.ellipse(x, y, (1 - nd.pulse) * 34 + base, ((1 - nd.pulse) * 34 + base) * 0.6, 0, 0, 6.283); ctx.stroke();
       }
     }
+    drawCards(dt);
     ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+  }
+
+  // ---- my signature: two orbit rings, with payment cards travelling around the galaxy
+  const RINGS = [0.86, 1.2];
+  const cards = [{ ring: 1, a: 0.4, v: 0.11 }, { ring: 1, a: 2.5, v: 0.11 }, { ring: 0, a: 4.4, v: -0.15 }, { ring: 1, a: 4.6, v: 0.11 }];
+  function ringPath(d) {
+    ctx.beginPath(); ctx.ellipse(CX, CY, d * R, d * R * TILT, ROT, 0, 6.283);
+  }
+  function drawCards(dt) {
+    ctx.globalCompositeOperation = "source-over";
+    ctx.lineWidth = 1; ctx.setLineDash([2, 7]);
+    RINGS.forEach((d, i) => {
+      ctx.lineDashOffset = -clock * (i ? 6 : -9);
+      ctx.globalAlpha = C.light ? 0.32 : 0.28; ctx.strokeStyle = C.gold; ringPath(d); ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    for (const c of cards) {
+      c.a += c.v * dt;
+      const d = RINGS[c.ring], depth = (Math.sin(c.a) + 1) / 2;    // 0 = far side, 1 = near side
+      const [x, y] = pos(d, c.a), sc = (small() ? 0.75 : 1) * (0.7 + depth * 0.5);
+      for (let k = 1; k <= 14; k++) {                               // a light trail behind each card
+        const [tx, ty] = pos(d, c.a - Math.sign(c.v) * k * 0.012);
+        ctx.globalAlpha = (1 - k / 14) * 0.35 * (0.5 + depth / 2); ctx.fillStyle = C.gold;
+        ctx.beginPath(); ctx.arc(tx, ty, 1.6 * sc, 0, 6.283); ctx.fill();
+      }
+      ctx.save(); ctx.translate(x, y); ctx.rotate(ROT + Math.cos(c.a) * 0.25); ctx.scale(sc, sc);
+      ctx.globalAlpha = 0.55 + depth * 0.45;
+      ctx.shadowColor = C.gold; ctx.shadowBlur = 14;
+      const g = ctx.createLinearGradient(-15, -10, 15, 10);
+      g.addColorStop(0, C.light ? C.star : fade(C.star2, 1)); g.addColorStop(1, C.gold);
+      ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(-15, -9.5, 30, 19, 3.5); ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "rgba(255,248,225,.9)"; ctx.fillRect(-11, -4, 6, 4.6);            // the chip
+      ctx.fillStyle = "rgba(255,255,255,.55)"; ctx.fillRect(-11, 3.5, 15, 1.6);         // the number line
+      ctx.restore();
+    }
   }
 
   // ---- start, pause when hidden, calm still picture for "reduce motion"
