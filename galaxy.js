@@ -4,7 +4,9 @@
   Thousands of tiny stars orbit slowly like a spiral galaxy. A few bright "nodes" (think: banks, wallets,
   merchants) ride along with the galaxy, connected by faint glowing paths. Every moment, a "transaction"
   leaves one node and travels along a path to another, leaving a trail of sparks. When it arrives, the
-  node pulses. Stars move out of the way of your mouse (or finger) and drift back. Click to send a burst.
+  node pulses. Stars move out of the way of your mouse (or finger) and drift back.
+  Click / tap: you send a real-looking payment (sample data) through operations — card → scheme → fraud check →
+  bank → merchant, or a fund load, a wallet transfer, a chargeback — with each stage popping up as it lands.
 
   How it works, in one sentence: every frame (about 60 times a second) we move each dot a tiny bit
   according to a few simple rules, then draw all the dots again.
@@ -33,7 +35,7 @@
     const css = getComputedStyle(document.documentElement);
     const v = n => css.getPropertyValue(n).trim();
     C = { star: v("--g-star"), star2: v("--g-star2"), gold: v("--g-gold"), path: v("--g-path"),
-          glow: v("--g-glow"), glow2: v("--g-glow2"), light: document.documentElement.dataset.theme === "light" };
+          glow: v("--g-glow"), glow2: v("--g-glow2"), label: v("--g-label"), light: document.documentElement.dataset.theme === "light" };
     makeSprite(); paintNebula();
   }
 
@@ -45,7 +47,7 @@
     W = canvas.clientWidth; H = canvas.clientHeight;
     canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    CX = small() ? W * 0.52 : W * 0.65; CY = small() ? H * 0.27 : H * 0.5;
+    CX = small() ? W * 0.52 : W * 0.65; CY = small() ? H * 0.48 : H * 0.5;
     R = Math.min(W * (small() ? 0.7 : 0.45), H * (small() ? 0.56 : 0.8));
     paintNebula(); makeStars(); makeNetwork();
   }
@@ -85,11 +87,13 @@
 
   // ---- the payment network: nodes that orbit with the galaxy, and paths between them
   let nodes = [], edges = [];
+  const NAMES = ["Card", "Scheme", "Fraud check", "Bank", "Merchant", "Wallet", "Ledger", "Client"];
+  const byName = n => nodes.findIndex(nd => nd.name === n);
   function makeNetwork() {
-    nodes = [{ d: 0, a: 0, hub: true, pulse: 0, flash: 0 }];       // the centre: the "core"
-    const count = small() ? 6 : 8;
+    nodes = [{ d: 0, a: 0, hub: true, pulse: 0, flash: 0, name: "OPS" }];   // the centre: operations
+    const count = NAMES.length;
     for (let i = 0; i < count; i++)
-      nodes.push({ d: 0.42 + (i % 2) * 0.3 + Math.random() * 0.06, a: (i / count) * Math.PI * 2 + Math.random() * 0.3, pulse: 0, flash: 0 });
+      nodes.push({ d: 0.42 + (i % 2) * 0.3 + Math.random() * 0.06, a: (i / count) * Math.PI * 2 + Math.random() * 0.3, pulse: 0, flash: 0, name: NAMES[i] });
     edges = [];
     for (let i = 1; i < nodes.length; i++) {
       edges.push([0, i]);                                            // every node talks to the core
@@ -119,13 +123,83 @@
   const mouse = { x: -9999, y: -9999, on: false };
   window.addEventListener("pointermove", e => { const r = canvas.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; mouse.on = true; }, { passive: true });
   window.addEventListener("pointerleave", () => { mouse.on = false; mouse.x = mouse.y = -9999; });
-  canvas.addEventListener("click", e => {                            // click: burst of transactions from the nearest node
-    const r = canvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, t = clock;
+  canvas.addEventListener("click", e => {                            // click: send a payment through operations
+    const r = canvas.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    startJourney(x, y);
+    // plus a burst of ordinary payments from the nearest node
     let best = 0, bd = 1e9;
-    nodes.forEach((nd, i) => { const p = nodePos(nd, t), dd = (p[0] - x) ** 2 + (p[1] - y) ** 2; if (dd < bd) { bd = dd; best = i; } });
-    for (let i = 0; i < 6; i++) sendTx(best);
+    nodes.forEach((nd, i) => { const p = nodePos(nd, clock), dd = (p[0] - x) ** 2 + (p[1] - y) ** 2; if (dd < bd) { bd = dd; best = i; } });
+    for (let i = 0; i < 5; i++) sendTx(best);
     nodes[best].pulse = 1; nodes[best].flash = 1;
   });
+
+  // ---- journeys: what a click sends. Each one hops node to node; each landing is an ops stage.
+  const FLOWS = [
+    { name: "Card payment", icon: "💳", path: ["Card", "Scheme", "Fraud check", "Bank", "Merchant"], tags: ["Approved ✓", "Fraud check ✓", "Cleared", "Settled ✓"], done: "Settled" },
+    { name: "Fund load", icon: "🏦", path: ["Bank", "OPS", "Ledger", "Wallet"], tags: ["Approved ✓", "Cleared", "Settled ✓"], done: "Loaded" },
+    { name: "Chargeback", icon: "🛡️", path: ["Client", "OPS", "Scheme", "Merchant", "OPS"], tags: ["Dispute raised", "Evidence sent", "Representment", "Won ✓"], done: "Won" },
+    { name: "Wallet transfer", icon: "⇄", path: ["Client", "Wallet", "OPS", "Ledger"], tags: ["Approved ✓", "Cleared", "Reconciled ✓"], done: "Reconciled" },
+  ];
+  let journeys = [], tags = [], fi = 0, cleared = 0;
+  const feed = document.getElementById("feed"), counter = document.getElementById("cleared");
+  function startJourney(x, y) {
+    if (journeys.length >= 6) return;
+    const f = FLOWS[fi++ % FLOWS.length], amt = Math.round((25 + Math.random() * 2400) * 4) / 4;
+    const j = { f, amt: "AED " + amt.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }), hop: -1, t: 0, from: [x, y], to: byName(f.path[0]), t0: clock };
+    if (reduceMotion) return finish(j);
+    journeys.push(j); hintGone();
+  }
+  function finish(j) {
+    cleared++; if (counter) { counter.textContent = cleared; counter.classList.remove("bump"); void counter.offsetWidth; counter.classList.add("bump"); }
+    if (!feed) return;
+    const el = document.createElement("div"); el.className = "toast";
+    el.innerHTML = `<span class="ic">${j.f.icon}</span><div><b>${j.f.name} · ${j.amt}</b>${j.f.done} in ${(clock - j.t0).toFixed(1)}s · ${j.f.path.length} stops</div>`;
+    feed.prepend(el);
+    const all = feed.querySelectorAll(".toast"); if (all.length > 4) all[all.length - 1].remove();
+    setTimeout(() => { el.classList.add("out"); setTimeout(() => el.remove(), 400); }, 6500);
+  }
+  function hintGone() { const h = document.getElementById("hint"); if (h) h.style.opacity = ".45"; }
+  function pill(x, y, text, bg, fg, alpha) {
+    ctx.font = "600 11px Inter, system-ui, sans-serif";
+    const w = ctx.measureText(text).width + 14;
+    ctx.globalAlpha = alpha; ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(x - w / 2, y - 10, w, 20, 10); ctx.fill();
+    ctx.fillStyle = fg; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(text, x, y + 0.5);
+  }
+  function drawJourneys(dt) {
+    ctx.globalCompositeOperation = "source-over";
+    for (let i = journeys.length - 1; i >= 0; i--) {
+      const j = journeys[i];
+      const p0 = j.hop < 0 ? j.from : nodePos(nodes[byName(j.f.path[j.hop])], clock), p1 = nodePos(nodes[j.to], clock);
+      const c = curve(p0, p1);
+      j.t = Math.min(1, j.t + dt * (j.hop < 0 ? 2.4 : 0.95));
+      // the route lights up
+      ctx.globalAlpha = 0.55; ctx.strokeStyle = C.gold; ctx.lineWidth = 1.6; ctx.setLineDash([4, 5]); ctx.lineDashOffset = -clock * 30;
+      ctx.beginPath(); ctx.moveTo(c[0][0], c[0][1]); ctx.quadraticCurveTo(c[1][0], c[1][1], c[2][0], c[2][1]); ctx.stroke(); ctx.setLineDash([]);
+      for (let k = 0; k < 12; k++) {                                 // a bigger, brighter comet
+        const p = qb(c, Math.max(0, j.t - k * 0.016));
+        ctx.globalAlpha = (1 - k / 12); ctx.fillStyle = k === 0 ? "#fffbe8" : C.gold;
+        ctx.beginPath(); ctx.arc(p[0], p[1], Math.max(0.6, k === 0 ? 4.2 : 3.2 - k * 0.22), 0, 6.283); ctx.fill();
+      }
+      const h = qb(c, j.t);
+      for (let k = 0; k < 2; k++) sparks.push({ x: h[0], y: h[1], vx: (Math.random() - 0.5) * 40, vy: (Math.random() - 0.5) * 40, life: 1 });
+      pill(h[0], h[1] - 20, j.amt, fade(C.gold, 0.95), C.light ? "#fffdf6" : "#1a1f0c", 1);
+      if (j.t >= 1) {                                                // landed: pulse the node and show the stage
+        const nd = nodes[j.to]; nd.pulse = 1; nd.flash = 1;
+        if (j.hop >= 0) { const [x, y] = nodePos(nd, clock); tags.push({ x, y: y - 26, text: j.f.tags[j.hop], life: 1, last: j.hop === j.f.tags.length - 1 }); }
+        j.hop++; j.t = 0;
+        if (j.hop >= j.f.path.length - 1) { journeys.splice(i, 1); finish(j); }
+        else j.to = byName(j.f.path[j.hop + 1]);
+      }
+    }
+    for (let i = tags.length - 1; i >= 0; i--) {                     // stage labels float up and fade
+      const g = tags[i]; g.life -= dt * (g.last ? 0.45 : 0.6); g.y -= dt * 16;
+      if (g.life <= 0) { tags.splice(i, 1); continue; }
+      pill(g.x, g.y, g.text, g.last ? (C.light ? "#4f6420" : "#a9c25a") : (C.light ? "rgba(35,41,15,.85)" : "rgba(20,27,14,.9)"),
+        g.last ? (C.light ? "#fffdf6" : "#11170c") : (C.light ? "#fffdf6" : "#eef2e0"), Math.min(1, g.life * 1.6));
+    }
+    ctx.textAlign = "start"; ctx.textBaseline = "alphabetic";
+  }
 
   // ---- one frame
   let clock = 0, last = performance.now(), spawn = 0, running = true;
@@ -210,7 +284,16 @@
         ctx.beginPath(); ctx.ellipse(x, y, (1 - nd.pulse) * 34 + base, ((1 - nd.pulse) * 34 + base) * 0.6, 0, 0, 6.283); ctx.stroke();
       }
     }
+    // node names: tiny labels, so you can see where the money goes
+    ctx.globalCompositeOperation = "source-over"; ctx.fillStyle = C.label;
+    for (const nd of nodes) {
+      const [x, y] = nodePos(nd, clock);
+      ctx.globalAlpha = 0.75 + nd.flash * 0.25;
+      ctx.font = nd.hub ? "700 11px Inter, system-ui, sans-serif" : "500 10.5px Inter, system-ui, sans-serif";
+      ctx.fillText(nd.name, x + (nd.hub ? 14 : 9), y + (nd.hub ? -12 : -8));
+    }
     drawCards(dt);
+    drawJourneys(dt);
     ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
   }
 
